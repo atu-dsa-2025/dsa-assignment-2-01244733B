@@ -3,10 +3,11 @@
 # Academic Year 2025/2026
 #
 # Instructions:
-# - Implement all TODO sections.
-# - Do NOT change class or function signatures.
-# - No external libraries permitted.
+#   - Implement all TODO sections.
+#   - Do NOT change class or function signatures.
+#   - No external libraries permitted.
 # ============================================================================
+
 
 # ============================================================================
 # D1 (3 Marks) — Written question
@@ -21,27 +22,20 @@ def d1_explanation():
       3. How does Open Addressing (Linear Probing) resolve it? Worst-case time?
     """
     return """
-    Hash collision definition: Two different keys hash to the same array
-    index (slot), so both entries "compete" for the same location.
+    Hash collision definition: A collision happens when the hash function maps two distinct keys to the exact same index in the hash table array.
 
     Chaining:
-        Description: Each array slot holds a linked list (or similar
-        structure) of all entries that hash to that index. On collision, the
-        new entry is simply appended to that slot's list.
-        Worst-case lookup: O(N) -- if all keys hash to the same slot, the
-        chain degenerates into a single linked list that must be scanned.
+        Description: In chaining, each array index points to a linked list. If a collision happens, the new element is simply added as a new node to the list at that index.
+        Worst-case lookup: O(N) -- this occurs if all elements hash to a single index, effectively turning the hash table into one long linked list.
 
     Open Addressing / Linear Probing:
-        Description: On collision, probe subsequent slots (index+1, index+2,
-        ...) in the array, wrapping around, until an empty slot (for
-        insertion) or the target key (for lookup) is found.
-        Worst-case lookup: O(N) -- if the table is nearly full or many keys
-        cluster together, a probe sequence may have to traverse almost every
-        slot in the table.
+        Description: When a collision occurs, this strategy searches forward sequentially (index + 1, index + 2, etc.) until it locates an empty slot to insert the new element.
+        Worst-case lookup: O(N) -- this happens when the table is densely packed, forcing the algorithm to scan through almost every slot to find the target or an empty space.
     """
 
+
 # ============================================================================
-# SAMPLE DATA (used in D2 and D3)
+# SAMPLE DATA  (used in D2 and D3)
 # ============================================================================
 
 results = [
@@ -50,6 +44,7 @@ results = [
     (1009, 'C'), (1010, 'A'),
 ]
 
+
 # ============================================================================
 # D2 (5 Marks)
 # Build a frequency report: how many students received each grade letter?
@@ -57,7 +52,7 @@ results = [
 # even if no student received that grade (count = 0).
 #
 # Expected output for the sample data:
-# {'A': 4, 'B': 3, 'C': 2, 'D': 0, 'F': 1}
+#   {'A': 4, 'B': 3, 'C': 2, 'D': 0, 'F': 1}
 # ============================================================================
 
 def grade_frequency_report(results):
@@ -70,15 +65,15 @@ def grade_frequency_report(results):
     Returns:
         dict: Mapping {'A': int, 'B': int, 'C': int, 'D': int, 'F': int}.
 
-    Time complexity: O(N)
-    Space complexity: O(1) -- the output dict has a fixed size of 5 keys
-    regardless of N.
+    Time complexity:  O(N)
+    Space complexity: O(1) -- since there are exactly 5 fixed grades regardless of N.
     """
-    freq = {'A': 0, 'B': 0, 'C': 0, 'D': 0, 'F': 0}
-    for _, grade in results:
-        if grade in freq:
-            freq[grade] += 1
-    return freq
+    grade_counts = {'A': 0, 'B': 0, 'C': 0, 'D': 0, 'F': 0}
+    for student_id, grade in results:
+        if grade in grade_counts:
+            grade_counts[grade] += 1
+    return grade_counts
+
 
 # ============================================================================
 # D3 (4 Marks)
@@ -95,24 +90,22 @@ def find_students_with_grade(results, grade):
 
     Args:
         results (list[tuple]): List of (student_id, grade_letter) tuples.
-        grade (str): The grade letter to filter by (e.g. 'A').
+        grade   (str):         The grade letter to filter by (e.g. 'A').
 
     Returns:
         list[int]: Sorted list of matching student IDs.
 
     Time complexity: O(N log N)
-
-    Why not O(N)? Filtering the matching students out of the results list is
-    itself an O(N) operation, but the requirement to return the IDs in
-    SORTED order forces a comparison-based sort of the matches, which costs
-    O(K log K) where K <= N. In the worst case (K close to N) this dominates
-    the O(N) filtering step, giving an overall O(N log N) -- grouping alone
-    (e.g. via a hash table) would only get us to O(N), it's the sort that
-    pushes the complexity up.
+    Why not O(N)?  While traversing the results list to find matches takes O(N) linear time, the final output must be sorted. The sorting operation takes O(M log M) where M is the number of matched students. In the worst-case scenario where everyone gets the same grade, M equals N. Therefore, the sorting step is the bottleneck, bringing the overall time complexity to O(N log N).
     """
-    students = [sid for sid, g in results if g == grade]
-    students.sort()
-    return students
+    matched_ids = []
+    for student_id, grade_letter in results:
+        if grade_letter == grade:
+            matched_ids.append(student_id)
+            
+    matched_ids.sort()
+    return matched_ids
+
 
 # ============================================================================
 # BST NODE — provided, do not modify
@@ -120,15 +113,15 @@ def find_students_with_grade(results, grade):
 
 class BSTNode:
     """A single node in a Binary Search Tree keyed on grade_score."""
-
     def __init__(self, student_id, grade_score):
-        self.student_id = student_id
+        self.student_id  = student_id
         self.grade_score = grade_score
-        self.left = None
+        self.left  = None
         self.right = None
 
     def __repr__(self):
         return f"BSTNode(id={self.student_id}, score={self.grade_score})"
+
 
 # ============================================================================
 # D4 (4 Marks)
@@ -137,7 +130,7 @@ class BSTNode:
 # Ignore duplicate scores (do not insert if score already exists).
 #
 # Demonstrate by inserting these records in order and drawing the resulting tree:
-# (1001, 72), (1002, 55), (1003, 88), (1004, 60), (1005, 95), (1006, 48)
+#   (1001, 72), (1002, 55), (1003, 88), (1004, 60), (1005, 95), (1006, 48)
 # ============================================================================
 
 def insert(root, student_id, grade_score):
@@ -145,31 +138,32 @@ def insert(root, student_id, grade_score):
     Recursively insert a new node into the BST.
 
     Args:
-        root (BSTNode | None): The current root of the subtree.
-        student_id (int): ID of the student.
-        grade_score (int): Score used as the BST key.
+        root        (BSTNode | None): The current root of the subtree.
+        student_id  (int):            ID of the student.
+        grade_score (int):            Score used as the BST key.
 
     Returns:
         BSTNode: The (possibly new) root of the subtree after insertion.
     """
     if root is None:
         return BSTNode(student_id, grade_score)
-
+        
     if grade_score < root.grade_score:
         root.left = insert(root.left, student_id, grade_score)
     elif grade_score > root.grade_score:
         root.right = insert(root.right, student_id, grade_score)
-    # else: duplicate score -- ignore, do not insert
-
+        
+    # Ignore duplicates by doing nothing if the score matches
     return root
 
 # Tree structure after inserting (1001,72),(1002,55),(1003,88),(1004,60),(1005,95),(1006,48):
 #
-#              72(1001)
-#             /        \
-#        55(1002)      88(1003)
-#        /      \             \
-#   48(1006)  60(1004)      95(1005)
+#            72
+#           /  \
+#         55    88
+#        /  \     \
+#      48    60    95
+
 
 # ============================================================================
 # D5 (4 Marks)
@@ -189,17 +183,14 @@ def inorder_traversal(root):
     Yields:
         tuple: (grade_score, student_id) in ascending order of grade_score.
 
-    Why does in-order traversal produce sorted output? By the BST invariant,
-    every node's left subtree contains only smaller keys and its right
-    subtree only larger keys. Visiting left -> node -> right therefore always
-    emits the smaller keys before the current node and the larger keys after
-    it, and this holds recursively at every level, so the overall output
-    sequence is fully ascending.
+    Why does in-order traversal produce sorted output?
+    By definition of a BST, all values in the left subtree are smaller than the parent node, and all values in the right subtree are larger. When we recursively process the left child first, then the parent, and then the right child, we are effectively visiting the elements in strictly increasing order from smallest to largest.
     """
-    if root:
+    if root is not None:
         yield from inorder_traversal(root.left)
         yield (root.grade_score, root.student_id)
         yield from inorder_traversal(root.right)
+
 
 # ============================================================================
 # D6 (5 Marks)
@@ -215,27 +206,26 @@ def search(root, grade_score):
     Search the BST for a node with the given grade_score.
 
     Args:
-        root (BSTNode | None): Root of the BST.
-        grade_score (int): The score to search for.
+        root        (BSTNode | None): Root of the BST.
+        grade_score (int):            The score to search for.
 
     Returns:
         int | None: The student_id if found, otherwise None.
 
     Time complexity: O(H) where H = height of the tree.
-    When is H = O(log N)? When the tree is balanced -- each subtree holds
-    roughly half the remaining nodes, so height grows logarithmically with N.
-    When is H = O(N)? When the tree is skewed (e.g. built by inserting
-    already-sorted data) -- it degenerates into a single chain of nodes,
-    equivalent to a linked list.
+    When is H = O(log N)?  This occurs when the tree is optimally balanced (e.g., insertions happened in a random, scattered order).
+    When is H = O(N)?      This occurs when the tree becomes entirely skewed into a single linked list (e.g., if we insert scores that are already sorted ascendingly or descendingly).
     """
-    if root is None:
-        return None
-    if grade_score == root.grade_score:
-        return root.student_id
-    elif grade_score < root.grade_score:
-        return search(root.left, grade_score)
-    else:
-        return search(root.right, grade_score)
+    node_ptr = root
+    while node_ptr is not None:
+        if grade_score == node_ptr.grade_score:
+            return node_ptr.student_id
+        elif grade_score < node_ptr.grade_score:
+            node_ptr = node_ptr.left
+        else:
+            node_ptr = node_ptr.right
+            
+    return None
 
 
 def find_range(root, low, high):
@@ -245,8 +235,8 @@ def find_range(root, low, high):
 
     Args:
         root (BSTNode | None): Root of the BST.
-        low (int): Lower bound (inclusive).
-        high (int): Upper bound (inclusive).
+        low  (int):            Lower bound (inclusive).
+        high (int):            Upper bound (inclusive).
 
     Returns:
         list[int]: Sorted list of student_ids within the score range.
@@ -254,20 +244,27 @@ def find_range(root, low, high):
     Time complexity: O(H + K) where H = tree height, K = number of results.
     Hint: use BST pruning to avoid visiting unnecessary subtrees.
     """
-    result = []
-
-    def helper(node):
-        if not node:
+    results = []
+    
+    def traverse(node):
+        if node is None:
             return
+            
+        # Prune left branches that fall completely below our target range
         if low < node.grade_score:
-            helper(node.left)
+            traverse(node.left)
+            
+        # Validate current node
         if low <= node.grade_score <= high:
-            result.append(node.student_id)
+            results.append(node.student_id)
+            
+        # Prune right branches that exceed our target range
         if node.grade_score < high:
-            helper(node.right)
+            traverse(node.right)
+            
+    traverse(root)
+    return results
 
-    helper(root)
-    return result
 
 # ============================================================================
 # TEST HARNESS — do not modify
@@ -285,7 +282,7 @@ if __name__ == "__main__":
     # D2 — grade frequency report
     print("\n--- D2: Grade Frequency Report ---")
     freq = grade_frequency_report(results)
-    print(f"  Result: {freq}")
+    print(f"  Result:   {freq}")
     expected_freq = {'A': 4, 'B': 3, 'C': 2, 'D': 0, 'F': 1}
     print(f"  Expected: {expected_freq}")
     print(f"  PASS: {freq == expected_freq}")
@@ -293,13 +290,13 @@ if __name__ == "__main__":
     # D3 — find students with grade
     print("\n--- D3: Students with Grade 'A' ---")
     a_students = find_students_with_grade(results, 'A')
-    print(f"  Result: {a_students}")
+    print(f"  Result:   {a_students}")
     print(f"  Expected: {[1001, 1003, 1006, 1010]}")
     print(f"  PASS: {a_students == [1001, 1003, 1006, 1010]}")
 
     print("\n--- D3: Students with Grade 'D' (none) ---")
     d_students = find_students_with_grade(results, 'D')
-    print(f"  Result: {d_students}")
+    print(f"  Result:   {d_students}")
     print(f"  Expected: []")
     print(f"  PASS: {d_students == []}")
 
@@ -318,7 +315,7 @@ if __name__ == "__main__":
     traversal = list(inorder_traversal(bst_root) or [])
     expected_traversal = [(48, 1006), (55, 1002), (60, 1004),
                           (72, 1001), (88, 1003), (95, 1005)]
-    print(f"  Result: {traversal}")
+    print(f"  Result:   {traversal}")
     print(f"  Expected: {expected_traversal}")
     print(f"  PASS: {traversal == expected_traversal}")
 
@@ -337,14 +334,15 @@ if __name__ == "__main__":
     # D6 — find_range
     print("\n--- D6: find_range ---")
     range_tests = [
-        (50, 75, [1002, 1004, 1001]),  # scores 55, 60, 72
-        (80, 100, [1003, 1005]),       # scores 88, 95
-        (0, 40, []),                   # none in range
-        (48, 48, [1006]),              # exact match
+        (50, 75, [1002, 1004, 1001]),   # scores 55, 60, 72
+        (80, 100, [1003, 1005]),        # scores 88, 95
+        (0,  40,  []),                  # none in range
+        (48,  48,  [1006]),             # exact match
     ]
     r_pass = True
     for lo, hi, expected_ids in range_tests:
         result_ids = find_range(bst_root, lo, hi) or []
+        # Sort both for comparison since order may vary
         status = "PASS" if sorted(result_ids) == sorted(expected_ids) else \
                  f"FAIL (got {result_ids}, expected {expected_ids})"
         print(f"  find_range({lo}, {hi}) -> {result_ids}  [{status}]")

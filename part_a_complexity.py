@@ -3,11 +3,12 @@
 # Academic Year 2025/2026
 #
 # Instructions:
-# - Answer questions A1 to A5 directly in the functions and docstrings below.
-# - For written/explanation questions, write your answer in the string returned
-#   by the function (or as a clearly labelled print statement).
-# - Do NOT change the function signatures.
+#   - Answer questions A1 to A5 directly in the functions and docstrings below.
+#   - For written/explanation questions, write your answer in the string returned
+#     by the function (or as a clearly labelled print statement).
+#   - Do NOT change the function signatures.
 # ============================================================================
+
 
 # --- Provided code for analysis (do not modify) ---
 
@@ -40,6 +41,7 @@ def algorithm_z(records):
         records[j + 1] = key
     return records
 
+
 # ============================================================================
 # A1 (4 Marks)
 # Determine the worst-case time complexity of algorithm_x.
@@ -50,6 +52,7 @@ def a1_analysis():
     """
     Write your analysis here.
     Your answer should state the worst-case time complexity and explain WHY.
+
     Example format:
         Worst-case time complexity: O(?)
         Space complexity: O(?)
@@ -58,10 +61,9 @@ def a1_analysis():
     return """
     Worst-case time complexity: O(N^2)
     Space complexity: O(1)
-    Explanation: The two nested for-loops (outer: 0 to N-1, inner: i to N-1)
-    result in Θ(N^2) pair comparisons when no matching pair is found or the
-    target pair is located at the very end of the search space.
+    Explanation: The algorithm uses two nested loops to check every possible pair of elements. Since both loops can run up to N times (length of records), the maximum number of steps is N multiplied by N. The space complexity remains O(1) because no new data structures are created; it only stores the indices.
     """
+
 
 # ============================================================================
 # A2 (4 Marks)
@@ -76,17 +78,15 @@ def a2_analysis():
     return """
     Worst-case time complexity: O(N)
     Space complexity: O(N)
-    Data structure that enables the speedup: Hash table (Python dict 'seen')
-    Space trade-off explanation: We spend O(N) extra space storing previously
-    seen values so that each lookup/insert is O(1) average case, avoiding the
-    O(N) rescan per element required by the brute-force approach.
+    Data structure that enables the speedup: Dictionary (Hash Map)
+    Space trade-off explanation: By storing the elements we have already iterated over in a dictionary, we avoid the inner loop and achieve O(1) lookup times for the complement. The trade-off is increased memory usage, as the dictionary will store up to N elements in the worst case, requiring O(N) space.
     """
+
 
 # ============================================================================
 # A3 (4 Marks)
 # Identify algorithm_z by name.
-# State its best-case and worst-case time complexities and the input that
-# causes each.
+# State its best-case and worst-case time complexities and the input that causes each.
 # ============================================================================
 
 def a3_analysis():
@@ -95,14 +95,10 @@ def a3_analysis():
     """
     return """
     Algorithm name: Insertion Sort
-    Best-case time complexity: O(N)
-        Input arrangement: Already (or nearly) sorted -- the inner while loop
-        condition fails immediately for every element, so only one comparison
-        per outer iteration is needed.
-    Worst-case time complexity: O(N^2)
-        Input arrangement: Reverse sorted -- every new element must be shifted
-        all the way to the front, giving the maximum number of shifts/compares.
+    Best-case time complexity: O(N)   Input arrangement: An already sorted array.
+    Worst-case time complexity: O(N^2)  Input arrangement: A reverse-sorted array.
     """
+
 
 # ============================================================================
 # A4 (4 Marks)
@@ -116,12 +112,13 @@ def a4_table():
     and rank them from 1 (fastest) to 5 (slowest).
     """
     return [
-        {"complexity": "O(1)",        "operations": "1",       "rank": 1},
-        {"complexity": "O(log N)",    "operations": "~20",     "rank": 2},
-        {"complexity": "O(N)",        "operations": "1000000", "rank": 3},
-        {"complexity": "O(N log N)",  "operations": "~2e7",    "rank": 4},
-        {"complexity": "O(N^2)",      "operations": "5e11",    "rank": 5},
+        {"complexity": "O(1)",        "operations": "1",  "rank": 1},
+        {"complexity": "O(log N)",    "operations": "20",  "rank": 2},
+        {"complexity": "O(N)",        "operations": "1,000,000",  "rank": 3},
+        {"complexity": "O(N log N)",  "operations": "20,000,000",  "rank": 4},
+        {"complexity": "O(N^2)",      "operations": "1,000,000,000,000",  "rank": 5},
     ]
+
 
 # ============================================================================
 # A5 (4 Marks)
@@ -135,14 +132,13 @@ def fibonacci_iterative(n):
     Must run in O(N) time and O(1) space.
     Do NOT use recursion.
     """
-    if n == 0:
-        return 0
-    if n == 1:
-        return 1
-    a, b = 0, 1
-    for _ in range(2, n + 1):
-        a, b = b, a + b
-    return b
+    if n <= 1:
+        return n
+    
+    prev, curr = 0, 1
+    for step in range(2, n + 1):
+        prev, curr = curr, prev + curr
+    return curr
 
 
 def a5_explanation():
@@ -150,17 +146,10 @@ def a5_explanation():
     Explain why the naive recursive Fibonacci is O(2^N) and not O(N).
     """
     return """
-    Why naive recursion is O(2^N): Each call to fib(n) spawns two further
-    calls, fib(n-1) and fib(n-2), branching the call tree almost everywhere.
-    This produces roughly phi^N total nodes (phi being the golden ratio),
-    since the same sub-problems (e.g. fib(n-3)) are recomputed many times
-    with no caching/memoisation of results.
-    How the iterative version achieves O(N) time and O(1) space: It walks
-    forward from the base cases using only two variables (a, b) to hold the
-    last two Fibonacci numbers, computing each value exactly once and
-    discarding intermediate results, so memory stays constant and total work
-    is linear in n.
+    Why naive recursion is O(2^N): In the naive approach, each call to fib(n) generates two independent sub-calls for fib(n-1) and fib(n-2), resulting in a massive binary tree of function calls. The total number of calls doubles with each step, leading to exponential growth.
+    How the iterative version achieves O(N) time and O(1) space: The iterative version loops from 2 up to N just once, giving linear time complexity. Furthermore, it only maintains two integer variables (prev and curr) to track the sequence, so it doesn't incur the memory overhead of a deep recursive call stack, keeping space at O(1).
     """
+
 
 # ============================================================================
 # TEST HARNESS — do not modify
@@ -194,6 +183,5 @@ if __name__ == "__main__":
         if result != expected:
             all_pass = False
     print(f"\n  All Fibonacci tests passed: {all_pass}")
-
     print("\n--- A5 Explanation ---")
     print(a5_explanation())
