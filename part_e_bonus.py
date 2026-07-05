@@ -5,22 +5,24 @@
 # This part is OPTIONAL but can earn up to 10 bonus marks.
 #
 # Instructions:
-# - Implement all TODO sections.
-# - Do NOT change function signatures.
-# - No external libraries permitted.
+#   - Implement all TODO sections.
+#   - Do NOT change function signatures.
+#   - No external libraries permitted.
 # ============================================================================
+
 
 # ============================================================================
 # SAMPLE DATA — provided, do not modify
 # ============================================================================
 
 sessions = [
-    ('R1', 8, 10),   # index 0
-    ('R1', 9, 11),   # index 1 -- conflicts with index 0
-    ('R1', 11, 13),  # index 2 -- no conflict with index 1
-    ('R2', 8, 12),   # index 3
-    ('R2', 10, 14),  # index 4 -- conflicts with index 3
+    ('R1', 8,  10),    # index 0
+    ('R1', 9,  11),    # index 1 -- conflicts with index 0
+    ('R1', 11, 13),    # index 2 -- no conflict with index 1
+    ('R2', 8,  12),    # index 3
+    ('R2', 10, 14),    # index 4 -- conflicts with index 3
 ]
+
 
 # ============================================================================
 # E1 (4 Marks)
@@ -32,7 +34,7 @@ sessions = [
 # i.e. the later session starts before the earlier one ends.
 #
 # Expected output for sample data:
-# {'R1': [(0, 1)], 'R2': [(3, 4)]}
+#   {'R1': [(0, 1)], 'R2': [(3, 4)]}
 # ============================================================================
 
 def build_conflict_map(sessions):
@@ -45,26 +47,32 @@ def build_conflict_map(sessions):
     Returns:
         dict: Mapping room_id -> list of (index_i, index_j) conflict pairs.
 
-    Time complexity: O(N^2)
-    Space complexity: O(N)
+    Time complexity:  O(N + R * K^2) -- where N is total sessions, R is number of rooms, and K is the max sessions in a single room.
+    Space complexity: O(N) -- to store the grouped indices and the resulting conflict map.
     """
-    from collections import defaultdict
+    # Step 1: Group session indices by room_id using a dictionary.
+    room_groups = {}
+    for i, (room_id, start_time, end_time) in enumerate(sessions):
+        if room_id not in room_groups:
+            room_groups[room_id] = []
+        room_groups[room_id].append(i)
+        
+    # Step 2: For each room, compare all pairs of sessions for conflicts.
+    conflict_map = {}
+    for room_id, indices in room_groups.items():
+        conflicts = []
+        # Compare every pair (i, j) where i < j
+        for a in range(len(indices)):
+            for b in range(a + 1, len(indices)):
+                i = indices[a]
+                j = indices[b]
+                # A conflict happens if the later session starts before the earlier one ends
+                if sessions[j][1] < sessions[i][2]:
+                    conflicts.append((i, j))
+        conflict_map[room_id] = conflicts
+        
+    return conflict_map
 
-    conflict_map = defaultdict(list)
-    # Ensure every room that appears in the input is present in the output,
-    # even if it ends up with no conflicts (an empty list).
-    for room_id, _, _ in sessions:
-        if room_id not in conflict_map:
-            conflict_map[room_id] = []
-
-    for i in range(len(sessions)):
-        room_i, start_i, end_i = sessions[i]
-        for j in range(i + 1, len(sessions)):
-            room_j, start_j, _ = sessions[j]
-            if room_i == room_j and start_j < end_i:
-                conflict_map[room_i].append((i, j))
-
-    return dict(conflict_map)
 
 # ============================================================================
 # E2 (3 Marks)
@@ -89,25 +97,30 @@ def detect_first_conflict(room_sessions):
     Returns:
         tuple | None: (index_i, index_j) of the first conflict, or None.
 
-    How the Stack is used: Active (not-yet-ended) sessions are kept on the
-    stack. Before processing each new session, any sessions on top of the
-    stack that have already ended (end_time <= current start_time) are
-    popped off, since they can no longer conflict. If a session remains on
-    top of the stack and its end_time is greater than the current session's
-    start_time, the two overlap -- that's the first conflict found.
+    How the Stack is used: (explain your approach in a comment here)
     """
+    # How the Stack is used: We push sessions onto the stack as we process them. Since they are sorted by start time, we only need to check if the current session starts before the most recently pushed session (the top of the stack) finishes. If it does, we found our first conflict! If it doesn't, there's no conflict with that session, so we can pop it off to keep checking.
     stack = []
-    for idx, start, end in room_sessions:
-        while stack and stack[-1][2] <= start:
-            stack.pop()
-
-        if stack and start < stack[-1][2]:
-            prev_idx = stack[-1][0]
-            return (min(prev_idx, idx), max(prev_idx, idx))
-
-        stack.append((idx, start, end))
-
+    
+    for session in room_sessions:
+        index, start, end = session
+        
+        while len(stack) > 0:
+            top_index, top_start, top_end = stack[-1]
+            
+            # Check for conflict
+            if start < top_end:
+                # We found the first conflict!
+                # Ensure we return the indices in (smaller, larger) order
+                return (min(top_index, index), max(top_index, index))
+            else:
+                # No conflict, this previous session has ended before the current one started
+                stack.pop()
+                
+        stack.append(session)
+        
     return None
+
 
 # ============================================================================
 # E3 (3 Marks) — Written question
@@ -124,30 +137,19 @@ def e3_analysis():
     """
     return """
     E1 complexity analysis:
-        The solution compares every pair of sessions (i, j) with i < j,
-        giving O(N^2) comparisons overall in the worst case (e.g. all
-        sessions in one room). Space is O(N) for storing the conflict map
-        entries in the worst case.
-        Overall: Time O(N^2), Space O(N)
+        Grouping step: O(N) -- we iterate through the list of N sessions once.
+        Pairwise comparison per room: O(K^2) -- where K is the number of sessions in a specific room.
+        Overall worst case: O(N^2) -- this happens if all N sessions are scheduled in exactly one room, causing the pairwise comparison to check all N(N-1)/2 pairs.
+        Space complexity: O(N) -- we store exactly N indices in the room dictionary and up to N^2 pairs in the worst case (though normally bounded closer to O(N)).
 
     Improvement via sort + linear scan:
-        If we group sessions by room (O(N)) and then sort each room's
-        sessions by start_time (O(M log M) per room, where M is sessions in
-        that room), a single linear/stack-based sweep (as in E2) can then
-        detect overlaps in O(M) per room. Summed across rooms this gives an
-        overall O(N log N) solution instead of O(N^2) -- a significant
-        improvement for large N.
+        If we sort the sessions in each room by their start times first, we don't have to check every single pair. We can just iterate through the sorted list and compare each session's start time with the previous session's end time.
+        New overall complexity: O(N log N) -- grouping is O(N), sorting all rooms takes at most O(N log N), and the linear scan takes O(N).
 
     BST vs sorted array for conflict detection:
-        A BST keyed on start_time could support similar ordered traversal and
-        range queries in O(log N) per operation, but building and balancing
-        a BST carries extra overhead (node objects, pointer rebalancing) for
-        no real benefit here, since we only need one static, ordered pass
-        over each room's sessions. A simple sort followed by a linear scan is
-        simpler to implement, has lower constant factors, and achieves the
-        same asymptotic complexity, so it is the more practical choice for
-        this use case.
+        A sorted array is generally better here. A BST keyed on start time takes O(N log N) to build and is great if we need to dynamically add or remove new sessions over time. However, since our list of sessions is static (already provided upfront), just sorting an array in O(N log N) and scanning it is much simpler and has less memory overhead than building a full tree structure.
     """
+
 
 # ============================================================================
 # TEST HARNESS — do not modify
@@ -161,7 +163,7 @@ if __name__ == "__main__":
     # E1 — build conflict map
     print("\n--- E1: build_conflict_map ---")
     conflict_map = build_conflict_map(sessions)
-    print(f"  Result: {conflict_map}")
+    print(f"  Result:   {conflict_map}")
     expected_map = {'R1': [(0, 1)], 'R2': [(3, 4)]}
     print(f"  Expected: {expected_map}")
     print(f"  PASS: {conflict_map == expected_map}")
@@ -177,11 +179,14 @@ if __name__ == "__main__":
 
     # E2 — detect first conflict using a stack
     print("\n--- E2: detect_first_conflict ---")
+
+    # Room R1 sessions, sorted by start
     r1_sessions = [(0, 8, 10), (1, 9, 11), (2, 11, 13)]
     first_conflict = detect_first_conflict(r1_sessions)
     print(f"  R1 first conflict: {first_conflict}  [Expected: (0, 1)]")
     print(f"  PASS: {first_conflict == (0, 1)}")
 
+    # Room R3 (no conflict)
     r3_sessions = [(0, 8, 9), (1, 9, 10), (2, 10, 11)]
     no_conflict = detect_first_conflict(r3_sessions)
     print(f"  R3 first conflict: {no_conflict}  [Expected: None]")
