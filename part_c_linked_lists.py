@@ -60,15 +60,15 @@ class ShuttleList:
         Time complexity WITHOUT tail pointer: O(N)
         (Fill in your answer in the docstring.)
         """
-        new_node = Booking(booking_id, student_name, destination)
+        booking_node = Booking(booking_id, student_name, destination)
         
         if self.head is None:
-            self.head = new_node
-            self.tail = new_node
+            self.head = booking_node
+            self.tail = booking_node
         else:
-            self.tail.next = new_node
-            new_node.prev = self.tail
-            self.tail = new_node
+            self.tail.next = booking_node
+            booking_node.prev = self.tail
+            self.tail = booking_node
 
     # -------------------------------------------------------------------------
     # C3 (4 Marks)
@@ -85,30 +85,30 @@ class ShuttleList:
         Returns:
             bool: True if deleted, False if not found.
         """
-        current = self.head
+        curr_node = self.head
         
-        while current is not None:
-            if current.booking_id == booking_id:
+        while curr_node is not None:
+            if curr_node.booking_id == booking_id:
                 # Case 1: Removing the head
-                if current == self.head:
-                    self.head = current.next
+                if curr_node == self.head:
+                    self.head = curr_node.next
                     if self.head is not None:
                         self.head.prev = None
                     else:
                         self.tail = None # The list became empty
                 # Case 2: Removing the tail
-                elif current == self.tail:
-                    self.tail = current.prev
+                elif curr_node == self.tail:
+                    self.tail = curr_node.prev
                     if self.tail is not None:
                         self.tail.next = None
                 # Case 3: Removing an interior node
                 else:
-                    current.prev.next = current.next
-                    current.next.prev = current.prev
+                    curr_node.prev.next = curr_node.next
+                    curr_node.next.prev = curr_node.prev
                     
                 return True
                 
-            current = current.next
+            curr_node = curr_node.next
             
         return False
 
@@ -128,31 +128,31 @@ class ShuttleList:
         Time complexity: O(N)  -- fill in your answer.
         Why swap data instead of relinking pointers? (write your answer in a comment below)
         """
-        node1 = None
-        node2 = None
-        current = self.head
+        target1 = None
+        target2 = None
+        curr_node = self.head
         
         # Traverse list once to find both nodes
-        while current is not None:
-            if current.booking_id == id1:
-                node1 = current
-            elif current.booking_id == id2:
-                node2 = current
+        while curr_node is not None:
+            if curr_node.booking_id == id1:
+                target1 = curr_node
+            elif curr_node.booking_id == id2:
+                target2 = curr_node
                 
-            if node1 and node2:
+            if target1 and target2:
                 break
                 
-            current = current.next
+            curr_node = curr_node.next
             
-        if node1 is None or node2 is None:
+        if target1 is None or target2 is None:
             return False
             
-        # Answer: swapping data is preferred because relinking pointers in a doubly linked list requires updating up to 8 pointer references (prev/next for both nodes and their neighbors) and handling complex edge cases (adjacent nodes, head, tail). Swapping data avoids all pointer logic.
+        # Answer: Swapping the raw data fields is much simpler and safer. If we tried to relink the actual pointers (next and prev), we would have to manage up to 8 different connections, plus we'd need extra code to handle tricky situations like swapping the head and tail or swapping nodes that are right next to each other.
         
         # Swap data fields
-        node1.booking_id, node2.booking_id = node2.booking_id, node1.booking_id
-        node1.student_name, node2.student_name = node2.student_name, node1.student_name
-        node1.destination, node2.destination = node2.destination, node1.destination
+        target1.booking_id, target2.booking_id = target2.booking_id, target1.booking_id
+        target1.student_name, target2.student_name = target2.student_name, target1.student_name
+        target1.destination, target2.destination = target2.destination, target1.destination
         
         return True
 
@@ -182,14 +182,14 @@ class RouteHistory:
     Backed by a Python list (used as a stack).
     """
     def __init__(self):
-        self._stack = []
+        self.history_stack = []
 
     def push(self, change):
         """
         Record a new route change string.
         Time complexity: O(1)
         """
-        self._stack.append(change)
+        self.history_stack.append(change)
 
     def pop_undo(self):
         """
@@ -197,9 +197,9 @@ class RouteHistory:
         Return None if there is nothing to undo.
         Time complexity: O(1)
         """
-        if len(self._stack) == 0:
+        if len(self.history_stack) == 0:
             return None
-        return self._stack.pop()
+        return self.history_stack.pop()
 
     def peek(self):
         """
@@ -207,9 +207,9 @@ class RouteHistory:
         Return None if the history is empty.
         Time complexity: O(1)
         """
-        if len(self._stack) == 0:
+        if len(self.history_stack) == 0:
             return None
-        return self._stack[-1]
+        return self.history_stack[-1]
 
 
 # ============================================================================
@@ -225,17 +225,17 @@ class BoardingQueue:
     Backed by collections.deque.
 
     Why deque instead of list?
-    # A plain Python list has O(N) time complexity for removing from the front (index 0) because all other elements must shift left. A collections.deque is implemented as a doubly linked list internally, making removal from the front O(1).
+    # When using a normal Python list as a queue, calling pop(0) takes O(N) time because Python has to shift every single remaining item one space to the left to fill the gap. A collections.deque is built on a doubly linked list, which allows popping from either end instantly in O(1) time.
     """
     def __init__(self):
-        self._queue = deque()
+        self.student_queue = deque()
 
     def join(self, student_name):
         """
         A student joins the back of the queue.
         Time complexity: O(1)
         """
-        self._queue.append(student_name)
+        self.student_queue.append(student_name)
 
     def board(self):
         """
@@ -243,9 +243,9 @@ class BoardingQueue:
         Return None if the queue is empty.
         Time complexity: O(1)
         """
-        if len(self._queue) == 0:
+        if len(self.student_queue) == 0:
             return None
-        return self._queue.popleft()
+        return self.student_queue.popleft()
 
     def peek_next(self):
         """
@@ -253,16 +253,16 @@ class BoardingQueue:
         Return None if the queue is empty.
         Time complexity: O(1)
         """
-        if len(self._queue) == 0:
+        if len(self.student_queue) == 0:
             return None
-        return self._queue[0]
+        return self.student_queue[0]
 
     def size(self):
         """
         Return the number of students currently in the queue.
         Time complexity: O(1)
         """
-        return len(self._queue)
+        return len(self.student_queue)
 
 
 # ============================================================================

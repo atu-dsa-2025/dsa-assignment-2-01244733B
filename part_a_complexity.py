@@ -61,7 +61,7 @@ def a1_analysis():
     return """
     Worst-case time complexity: O(N^2)
     Space complexity: O(1)
-    Explanation: There are two nested for loops checking pairs in the list. The outer loop runs N times and the inner loop runs up to N times, so the worst case is N*N operations. Space is O(1) since we just use i and j variables and don't make any extra arrays.
+    Explanation: The algorithm uses two nested loops to check every possible pair of elements. Since both loops can run up to N times (length of records), the maximum number of steps is N multiplied by N. The space complexity remains O(1) because no new data structures are created; it only stores the indices.
     """
 
 
@@ -78,8 +78,8 @@ def a2_analysis():
     return """
     Worst-case time complexity: O(N)
     Space complexity: O(N)
-    Data structure that enables the speedup: Dictionary (or Hash map)
-    Space trade-off explanation: The dictionary lets us look up the complement in O(1) time instead of having to loop again. The trade-off is we have to save every item we check into the dictionary, which takes O(N) extra memory.
+    Data structure that enables the speedup: Dictionary (Hash Map)
+    Space trade-off explanation: By storing the elements we have already iterated over in a dictionary, we avoid the inner loop and achieve O(1) lookup times for the complement. The trade-off is increased memory usage, as the dictionary will store up to N elements in the worst case, requiring O(N) space.
     """
 
 
@@ -95,8 +95,8 @@ def a3_analysis():
     """
     return """
     Algorithm name: Insertion Sort
-    Best-case time complexity: O(N)   Input arrangement: when the array is already sorted
-    Worst-case time complexity: O(N^2)  Input arrangement: when the array is sorted in reverse order
+    Best-case time complexity: O(N)   Input arrangement: An already sorted array.
+    Worst-case time complexity: O(N^2)  Input arrangement: A reverse-sorted array.
     """
 
 
@@ -135,10 +135,10 @@ def fibonacci_iterative(n):
     if n <= 1:
         return n
     
-    a, b = 0, 1
-    for _ in range(2, n + 1):
-        a, b = b, a + b
-    return b
+    prev, curr = 0, 1
+    for step in range(2, n + 1):
+        prev, curr = curr, prev + curr
+    return curr
 
 
 def a5_explanation():
@@ -146,8 +146,8 @@ def a5_explanation():
     Explain why the naive recursive Fibonacci is O(2^N) and not O(N).
     """
     return """
-    Why naive recursion is O(2^N): Because every recursive call spawns two more calls (fib(n-1) and fib(n-2)). It builds a huge tree where the amount of work doubles at each step, making it grow exponentially.
-    How the iterative version achieves O(N) time and O(1) space: It runs a single loop from 2 to N, which takes O(N) time. It only uses two variables (a and b) to remember the last two numbers instead of a massive call stack, so the memory used is always O(1).
+    Why naive recursion is O(2^N): In the naive approach, each call to fib(n) generates two independent sub-calls for fib(n-1) and fib(n-2), resulting in a massive binary tree of function calls. The total number of calls doubles with each step, leading to exponential growth.
+    How the iterative version achieves O(N) time and O(1) space: The iterative version loops from 2 up to N just once, giving linear time complexity. Furthermore, it only maintains two integer variables (prev and curr) to track the sequence, so it doesn't incur the memory overhead of a deep recursive call stack, keeping space at O(1).
     """
 
 

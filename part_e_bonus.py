@@ -51,21 +51,21 @@ def build_conflict_map(sessions):
     Space complexity: O(N) -- to store the grouped indices and the resulting conflict map.
     """
     # Step 1: Group session indices by room_id using a dictionary.
-    room_groups = {}
-    for i, (room_id, start_time, end_time) in enumerate(sessions):
-        if room_id not in room_groups:
-            room_groups[room_id] = []
-        room_groups[room_id].append(i)
+    sessions_by_room = {}
+    for idx, (room_id, start_time, end_time) in enumerate(sessions):
+        if room_id not in sessions_by_room:
+            sessions_by_room[room_id] = []
+        sessions_by_room[room_id].append(idx)
         
     # Step 2: For each room, compare all pairs of sessions for conflicts.
     conflict_map = {}
-    for room_id, indices in room_groups.items():
+    for room_id, idx_list in sessions_by_room.items():
         conflicts = []
         # Compare every pair (i, j) where i < j
-        for a in range(len(indices)):
-            for b in range(a + 1, len(indices)):
-                i = indices[a]
-                j = indices[b]
+        for idx1 in range(len(idx_list)):
+            for idx2 in range(idx1 + 1, len(idx_list)):
+                i = idx_list[idx1]
+                j = idx_list[idx2]
                 # A conflict happens if the later session starts before the earlier one ends
                 if sessions[j][1] < sessions[i][2]:
                     conflicts.append((i, j))
@@ -99,25 +99,25 @@ def detect_first_conflict(room_sessions):
 
     How the Stack is used: (explain your approach in a comment here)
     """
-    # How the Stack is used: We push sessions onto the stack as we process them. Since they are sorted by start time, we only need to check if the current session starts before the most recently pushed session (the top of the stack) finishes. If it does, we found our first conflict! If it doesn't, there's no conflict with that session, so we can pop it off to keep checking.
-    stack = []
+    # How the Stack is used: As we iterate through the chronologically sorted sessions, we push them onto the stack. For each new session, we check it against the session at the top of the stack. If the new session's start time overlaps with the top session's end time, we have found the first conflict. If there is no overlap, the top session has concluded, so we pop it off and continue.
+    active_sessions = []
     
     for session in room_sessions:
-        index, start, end = session
+        curr_idx, curr_start, curr_end = session
         
-        while len(stack) > 0:
-            top_index, top_start, top_end = stack[-1]
+        while len(active_sessions) > 0:
+            top_idx, top_start, top_end = active_sessions[-1]
             
             # Check for conflict
-            if start < top_end:
+            if curr_start < top_end:
                 # We found the first conflict!
                 # Ensure we return the indices in (smaller, larger) order
-                return (min(top_index, index), max(top_index, index))
+                return (min(top_idx, curr_idx), max(top_idx, curr_idx))
             else:
                 # No conflict, this previous session has ended before the current one started
-                stack.pop()
+                active_sessions.pop()
                 
-        stack.append(session)
+        active_sessions.append(session)
         
     return None
 
@@ -137,17 +137,17 @@ def e3_analysis():
     """
     return """
     E1 complexity analysis:
-        Grouping step: O(N) -- we iterate through the list of N sessions once.
-        Pairwise comparison per room: O(K^2) -- where K is the number of sessions in a specific room.
-        Overall worst case: O(N^2) -- this happens if all N sessions are scheduled in exactly one room, causing the pairwise comparison to check all N(N-1)/2 pairs.
-        Space complexity: O(N) -- we store exactly N indices in the room dictionary and up to N^2 pairs in the worst case (though normally bounded closer to O(N)).
+        Grouping step: O(N) -- iterating over the session list takes linear time.
+        Pairwise comparison per room: O(K^2) -- where K is the number of scheduled sessions for a particular room.
+        Overall worst case: O(N^2) -- if the university schedules every single exam into one giant room, we are forced to compare all N(N-1)/2 possibilities.
+        Space complexity: O(N) -- memory used for the dictionary keys (rooms) and the lists of indices will roughly scale linearly with the number of sessions.
 
     Improvement via sort + linear scan:
-        If we sort the sessions in each room by their start times first, we don't have to check every single pair. We can just iterate through the sorted list and compare each session's start time with the previous session's end time.
-        New overall complexity: O(N log N) -- grouping is O(N), sorting all rooms takes at most O(N log N), and the linear scan takes O(N).
+        Sorting the sessions by start time allows us to completely avoid nested loop comparisons. We just walk through the array sequentially and compare adjacent elements.
+        New overall complexity: O(N log N) -- grouping takes O(N), sorting the largest room takes O(N log N), and the single linear pass takes O(N). The dominant term is O(N log N).
 
     BST vs sorted array for conflict detection:
-        A sorted array is generally better here. A BST keyed on start time takes O(N log N) to build and is great if we need to dynamically add or remove new sessions over time. However, since our list of sessions is static (already provided upfront), just sorting an array in O(N log N) and scanning it is much simpler and has less memory overhead than building a full tree structure.
+        While a BST (keyed by start_time) allows for efficient O(log N) dynamic insertions and overlap queries, it is overkill for a static scheduling problem where all exams are known upfront. Sorting an array takes O(N log N) and is much more memory efficient since it avoids the overhead of node objects and tree pointers.
     """
 
 

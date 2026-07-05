@@ -22,15 +22,15 @@ def d1_explanation():
       3. How does Open Addressing (Linear Probing) resolve it? Worst-case time?
     """
     return """
-    Hash collision definition: A collision occurs when two different keys generate the same hash index and attempt to be stored in the exact same slot in the hash table.
+    Hash collision definition: A collision happens when the hash function maps two distinct keys to the exact same index in the hash table array.
 
     Chaining:
-        Description: Each slot in the hash table holds a linked list. When a collision occurs, the new item is just appended to the end of the list at that slot.
-        Worst-case lookup: O(N) -- if every single item hashes to the same slot, forming a single long linked list.
+        Description: In chaining, each array index points to a linked list. If a collision happens, the new element is simply added as a new node to the list at that index.
+        Worst-case lookup: O(N) -- this occurs if all elements hash to a single index, effectively turning the hash table into one long linked list.
 
     Open Addressing / Linear Probing:
-        Description: When a collision occurs, the algorithm checks the very next slot (and the next, and the next) until it finds an empty space to place the item.
-        Worst-case lookup: O(N) -- if the table is almost full and you have to probe through every single slot to find the item or an empty space.
+        Description: When a collision occurs, this strategy searches forward sequentially (index + 1, index + 2, etc.) until it locates an empty slot to insert the new element.
+        Worst-case lookup: O(N) -- this happens when the table is densely packed, forcing the algorithm to scan through almost every slot to find the target or an empty space.
     """
 
 
@@ -68,11 +68,11 @@ def grade_frequency_report(results):
     Time complexity:  O(N)
     Space complexity: O(1) -- since there are exactly 5 fixed grades regardless of N.
     """
-    freq = {'A': 0, 'B': 0, 'C': 0, 'D': 0, 'F': 0}
+    grade_counts = {'A': 0, 'B': 0, 'C': 0, 'D': 0, 'F': 0}
     for student_id, grade in results:
-        if grade in freq:
-            freq[grade] += 1
-    return freq
+        if grade in grade_counts:
+            grade_counts[grade] += 1
+    return grade_counts
 
 
 # ============================================================================
@@ -96,15 +96,15 @@ def find_students_with_grade(results, grade):
         list[int]: Sorted list of matching student IDs.
 
     Time complexity: O(N log N)
-    Why not O(N)?  Although filtering the students takes O(N) time, the problem requires returning a SORTED list of IDs. Sorting the filtered list takes O(K log K) time where K is the number of matches. In the worst case (where all students have the same grade), K = N, so the sorting step dominates the time complexity, making it O(N log N).
+    Why not O(N)?  While traversing the results list to find matches takes O(N) linear time, the final output must be sorted. The sorting operation takes O(M log M) where M is the number of matched students. In the worst-case scenario where everyone gets the same grade, M equals N. Therefore, the sorting step is the bottleneck, bringing the overall time complexity to O(N log N).
     """
-    students = []
+    matched_ids = []
     for student_id, grade_letter in results:
         if grade_letter == grade:
-            students.append(student_id)
+            matched_ids.append(student_id)
             
-    students.sort()
-    return students
+    matched_ids.sort()
+    return matched_ids
 
 
 # ============================================================================
@@ -153,7 +153,7 @@ def insert(root, student_id, grade_score):
     elif grade_score > root.grade_score:
         root.right = insert(root.right, student_id, grade_score)
         
-    # If equal, do nothing (ignore duplicates)
+    # Ignore duplicates by doing nothing if the score matches
     return root
 
 # Tree structure after inserting (1001,72),(1002,55),(1003,88),(1004,60),(1005,95),(1006,48):
@@ -184,7 +184,7 @@ def inorder_traversal(root):
         tuple: (grade_score, student_id) in ascending order of grade_score.
 
     Why does in-order traversal produce sorted output?
-    Because of the BST property, all nodes in the left subtree are smaller than the root, and all nodes in the right subtree are larger. By visiting Left -> Root -> Right recursively, we naturally process all smaller values, then the middle value, then all larger values.
+    By definition of a BST, all values in the left subtree are smaller than the parent node, and all values in the right subtree are larger. When we recursively process the left child first, then the parent, and then the right child, we are effectively visiting the elements in strictly increasing order from smallest to largest.
     """
     if root is not None:
         yield from inorder_traversal(root.left)
@@ -213,17 +213,17 @@ def search(root, grade_score):
         int | None: The student_id if found, otherwise None.
 
     Time complexity: O(H) where H = height of the tree.
-    When is H = O(log N)?  When the tree is perfectly balanced (e.g. data was inserted in a random or balanced order).
-    When is H = O(N)?      When the tree is completely unbalanced (e.g. data was inserted in perfectly sorted ascending or descending order, forming a straight line).
+    When is H = O(log N)?  This occurs when the tree is optimally balanced (e.g., insertions happened in a random, scattered order).
+    When is H = O(N)?      This occurs when the tree becomes entirely skewed into a single linked list (e.g., if we insert scores that are already sorted ascendingly or descendingly).
     """
-    current = root
-    while current is not None:
-        if grade_score == current.grade_score:
-            return current.student_id
-        elif grade_score < current.grade_score:
-            current = current.left
+    node_ptr = root
+    while node_ptr is not None:
+        if grade_score == node_ptr.grade_score:
+            return node_ptr.student_id
+        elif grade_score < node_ptr.grade_score:
+            node_ptr = node_ptr.left
         else:
-            current = current.right
+            node_ptr = node_ptr.right
             
     return None
 
@@ -246,23 +246,23 @@ def find_range(root, low, high):
     """
     results = []
     
-    def dfs(node):
+    def traverse(node):
         if node is None:
             return
             
-        # Pruning: only go left if there might be valid scores there
+        # Prune left branches that fall completely below our target range
         if low < node.grade_score:
-            dfs(node.left)
+            traverse(node.left)
             
-        # Check current node
+        # Validate current node
         if low <= node.grade_score <= high:
             results.append(node.student_id)
             
-        # Pruning: only go right if there might be valid scores there
+        # Prune right branches that exceed our target range
         if node.grade_score < high:
-            dfs(node.right)
+            traverse(node.right)
             
-    dfs(root)
+    traverse(root)
     return results
 
 

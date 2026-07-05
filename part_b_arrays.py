@@ -30,21 +30,21 @@ def binary_search(arr, target):
         int: The index of target in arr, or -1 if not found.
 
     Complexity analysis (fill these in):
-        Best-case time complexity:  O(1)  -- when the target is exactly in the middle on the very first check.
-        Worst-case time complexity: O(log N)  -- when the target is not in the array, or at the edges, requiring dividing until the end.
+        Best-case time complexity:  O(1)  -- target is exactly at the middle index on the first check.
+        Worst-case time complexity: O(log N)  -- target is missing or at the extremes, causing the algorithm to divide the list repeatedly until empty.
     """
-    left = 0
-    right = len(arr) - 1
+    low = 0
+    high = len(arr) - 1
     
-    while left <= right:
-        mid = (left + right) // 2
+    while low <= high:
+        middle_idx = (low + high) // 2
         
-        if arr[mid] == target:
-            return mid
-        elif arr[mid] < target:
-            left = mid + 1
+        if arr[middle_idx] == target:
+            return middle_idx
+        elif arr[middle_idx] < target:
+            low = middle_idx + 1
         else:
-            right = mid - 1
+            high = middle_idx - 1
             
     return -1
 
@@ -75,18 +75,18 @@ def find_pair_with_sum(arr, target):
         Time: O(N)
         Space: O(1)
     """
-    left = 0
-    right = len(arr) - 1
+    start = 0
+    end = len(arr) - 1
     
-    while left < right:
-        current_sum = arr[left] + arr[right]
+    while start < end:
+        total_sum = arr[start] + arr[end]
         
-        if current_sum == target:
-            return (arr[left], arr[right])
-        elif current_sum < target:
-            left += 1  # We need a bigger number
+        if total_sum == target:
+            return (arr[start], arr[end])
+        elif total_sum < target:
+            start += 1  # Sum is too low, move left pointer rightwards
         else:
-            right -= 1 # We need a smaller number
+            end -= 1    # Sum is too high, move right pointer leftwards
             
     return None
 
@@ -123,20 +123,20 @@ def rotate_array(arr, k):
     if k == 0:
         return
         
-    # Helper to reverse a portion of the array
-    def reverse(start, end):
-        while start < end:
-            # Swap elements in-place
-            arr[start], arr[end] = arr[end], arr[start]
-            start += 1
-            end -= 1
+    # Helper function to flip a portion of the array
+    def flip_segment(idx1, idx2):
+        while idx1 < idx2:
+            # Perform the swap
+            arr[idx1], arr[idx2] = arr[idx2], arr[idx1]
+            idx1 += 1
+            idx2 -= 1
             
-    # Reverse the entire array
-    reverse(0, n - 1)
-    # Reverse the first k elements
-    reverse(0, k - 1)
-    # Reverse the rest
-    reverse(k, n - 1)
+    # Flip everything
+    flip_segment(0, n - 1)
+    # Flip the first k items
+    flip_segment(0, k - 1)
+    # Flip the remaining items
+    flip_segment(k, n - 1)
 
 
 # ============================================================================
@@ -156,9 +156,9 @@ def b4_explanation():
     return """
     Explanation of amortised O(1) for Python list append:
 
-    1. When a Python list runs out of capacity, it creates a brand new, larger array internally (usually double the size) and copies all the old elements over to it.
-    2. A single append can cost O(N) in the worst case because of this resizing process. If the array is full, it takes O(N) time to copy all N existing items into the new array before adding the new item.
-    3. The amortised cost is still considered O(1) because resizing happens so rarely. The extra space from doubling the size gives us enough room for many fast O(1) appends, so the expensive O(N) step gets "averaged out" across all the fast steps.
+    1. When a Python list runs out of its pre-allocated capacity, it creates a new, larger array under the hood (usually doubling its size) and transfers all the existing items over to it.
+    2. A single append can cost O(N) worst-case time because copying N existing elements into the newly allocated block of memory requires looping through all of them.
+    3. The amortised cost is still O(1) because this expensive reallocation event is very rare. Since the list doubles its size, the next N appends will be fast O(1) inserts, meaning the heavy O(N) cost averages out to a constant time per operation over the long run.
     """
 
 
